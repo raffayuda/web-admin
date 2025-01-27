@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertModal } from "@/components/modals/alert-modal";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -47,6 +48,8 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
     try {
         setLoading(true)
         await axios.patch(`/api/stores/${params.storeId}`, data)
+        router.refresh();
+        toast.success("Toko berhasil diupdate")
     } catch (error) {
         toast.error("Cek kembalki data yang diinput")
     }finally{
@@ -54,8 +57,23 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
     }
   };
 
+  const onDelete = async () => {
+    try {
+        await axios.delete(`/api/stores/${params.storeId}`)
+        router.refresh()
+        router.push('/')
+        toast.success("Toko berhasil dihapus")
+    } catch (error) {
+      toast.error("Cek kembali data dan koneksimu")
+    }finally{
+      setLoading(false)
+      setOpen(false)
+    }
+  }
+
   return (
     <>
+    <AlertModal isOpen={open} onClose={() => setOpen(false)} onConfirm={onDelete} loading={loading}/>
       <div className="flex items-center justify-between">
         <Heading title="settings" description="Atur Toko" />
         <Button disabled={loading} variant="destructive" size="sm" onClick={() => setOpen(true)}>
