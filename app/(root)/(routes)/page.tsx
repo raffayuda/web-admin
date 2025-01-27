@@ -16,12 +16,7 @@ const SetupPage = () => {
     }
   }, [isOpen, onOpen]);
 
-  return (
-    <div className="p-4">
-      Root Page
-      <UserButton afterSignOutUrl="/sign-in" />
-    </div>
-  )
+  return null
 };
 
 export default SetupPage; 
