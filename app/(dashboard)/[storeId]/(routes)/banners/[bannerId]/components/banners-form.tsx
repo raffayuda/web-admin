@@ -12,12 +12,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Heading } from "@/components/ui/heading";
+import ImageUpload from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useOrigin } from "@/hooks/use-origin";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Banner } from "@prisma/client";
 import axios from "axios";
+import { url } from "inspector";
 import { Trash } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -37,64 +39,79 @@ const formSchema = z.object({
 type BannersFormValues = z.infer<typeof formSchema>;
 
 export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
+  const params = useParams();
+  const router = useRouter();
+  const origin = useOrigin();
 
-  const params = useParams()
-  const router = useRouter()
-  const origin = useOrigin()
-
-  
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const title = initialData ? "Edit Banner" : "Tambah Banner";
   const description = initialData ? "Edit banner" : "Tambah banner";
-  const toastMessage = initialData ? "Banner berhasil diupdate" : "Banner berhasil ditambahkan";
+  const toastMessage = initialData
+    ? "Banner berhasil diupdate"
+    : "Banner berhasil ditambahkan";
   const action = initialData ? "Simpan" : "Tambah";
 
   const form = useForm<BannersFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
-      label: '',
-      imageUrl: '',
+      label: "",
+      imageUrl: "",
     },
   });
 
   const onSubmit = async (data: BannersFormValues) => {
     try {
-        setLoading(true)
-        await axios.patch(`/api/stores/${params.storeId}`, data)
-        router.refresh();
-        toast.success("Toko berhasil diupdate")
+      setLoading(true);
+      if(initialData){
+        await axios.patch(`/api/${params.storeId}/banners/${params.bannerId}`, data);
+      }else{
+        await axios.post(`/api/${params.storeId}/banners`, data);
+      }
+      await axios.post(`/api/${params.storeId}/banners`, data);
+      router.refresh();
+      toast.success(toastMessage);
     } catch (error) {
-        toast.error("Cek kembalki data yang diinput")
-    }finally{
-        setLoading(false)
+      toast.error("Cek kembalki data yang diinput");
+    } finally {
+      setLoading(false);
     }
   };
 
   const onDelete = async () => {
     try {
-        await axios.delete(`/api/stores/${params.storeId}`)
-        router.refresh()
-        router.push('/')
-        toast.success("Toko berhasil dihapus")
+      await axios.delete(`/api/stores/${params.storeId}/banners/${params.bannerId}`);
+      router.refresh();
+      router.push("/");
+      toast.success("Banner berhasil dihapus");
     } catch (error) {
-      toast.error("Cek kembali data dan koneksimu")
-    }finally{
-      setLoading(false)
-      setOpen(false)
+      toast.error("Cek kembali data dan koneksimu");
+    } finally {
+      setLoading(false);
+      setOpen(false);
     }
-  }
+  };
 
   return (
     <>
-    <AlertModal isOpen={open} onClose={() => setOpen(false)} onConfirm={onDelete} loading={loading}/>
+      <AlertModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        onConfirm={onDelete}
+        loading={loading}
+      />
       <div className="flex items-center justify-between">
         <Heading title={title} description={description} />
-        {initialData && (  
-        <Button disabled={loading} variant="destructive" size="sm" onClick={() => setOpen(true)}>
-          <Trash className="h-4 w-4" />
-        </Button>
+        {initialData && (
+          <Button
+            disabled={loading}
+            variant="destructive"
+            size="sm"
+            onClick={() => setOpen(true)}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
         )}
       </div>
       <Separator />
@@ -117,16 +134,35 @@ export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage/>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Image</FormLabel>
+                  <FormControl>
+                    <ImageUpload
+                      disabled={loading}
+                      onChange={(url) => field.onChange(url)}
+                      onRemove={() => field.onChange("")}
+                      value={field.value ? [field.value] : []}
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <Button disabled={loading} className="ml-auto" type="submit">{action}</Button>
+          <Button disabled={loading} className="ml-auto" type="submit">
+            {action}
+          </Button>
         </form>
       </Form>
       <Separator />
-      
     </>
   );
 };
