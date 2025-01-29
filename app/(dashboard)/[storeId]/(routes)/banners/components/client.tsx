@@ -6,9 +6,11 @@ import { Separator } from "@/components/ui/separator"
 import { Banner } from "@prisma/client"
 import { Plus } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
+import { BannerColumn, columns } from "./columns"
+import { DataTable } from "@/components/ui/data-table"
 
 interface BannerClientProps {
-    data: Banner[]
+    data: BannerColumn[]
 }
 
 export const BannerClient: React.FC<BannerClientProps> = ({data}) => {
@@ -24,6 +26,7 @@ export const BannerClient: React.FC<BannerClientProps> = ({data}) => {
             </Button>
         </div>
         <Separator/>
+        <DataTable data={data} columns={columns} searchKey="label"/>
         </>
     )
 }
