@@ -1,8 +1,16 @@
 "use client";
 
-import { AlertModal } from "@/components/modals/alert-modal";
-import { ApiAlert } from "@/components/ui/api-alert";
+import * as z from "zod";
+import { useState } from "react";
+import axios from "axios";
+
 import { Button } from "@/components/ui/button";
+import { Heading } from "@/components/ui/heading";
+import { Separator } from "@/components/ui/separator";
+import { Banner } from "@prisma/client";
+import { Trash } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -11,23 +19,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Heading } from "@/components/ui/heading";
-import ImageUpload from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { useOrigin } from "@/hooks/use-origin";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Banner } from "@prisma/client";
-import axios from "axios";
-import { url } from "inspector";
-import { Trash } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { z } from "zod";
+import { useParams, useRouter } from "next/navigation";
+import { AlertModal } from "@/components/modals/alert-modal";
+import { useOrigin } from "@/hooks/use-origin";
+import ImageUpload from "@/components/ui/image-upload";
 
-interface BannersFormProps {
+interface BannerFormProps {
   initialData: Banner | null;
 }
 
@@ -36,9 +35,9 @@ const formSchema = z.object({
   imageUrl: z.string().min(1),
 });
 
-type BannersFormValues = z.infer<typeof formSchema>;
+type BannerFormValues = z.infer<typeof formSchema>;
 
-export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
+export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
   const params = useParams();
   const router = useRouter();
   const origin = useOrigin();
@@ -46,14 +45,14 @@ export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const title = initialData ? "Edit Banner" : "Tambah Banner";
-  const description = initialData ? "Edit banner" : "Tambah banner";
+  const title = initialData ? "Edit Banner" : "Buat Banner";
+  const description = initialData ? "Edit Banner Toko" : "Buat Banner Toko";
   const toastMessage = initialData
-    ? "Banner berhasil diupdate"
-    : "Banner berhasil ditambahkan";
-  const action = initialData ? "Simpan" : "Tambah";
+    ? "Banner berhasil di edit"
+    : "Banner berhasil dibuat";
+  const action = initialData ? "Simpan Banner" : "Buat Banner";
 
-  const form = useForm<BannersFormValues>({
+  const form = useForm<BannerFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       label: "",
@@ -61,20 +60,22 @@ export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
     },
   });
 
-  const onSubmit = async (data: BannersFormValues) => {
+  const onSubmit = async (data: BannerFormValues) => {
     try {
       setLoading(true);
-      if(initialData){
-        await axios.patch(`/api/${params.storeId}/banners/${params.bannerId}`, data);
-      }else{
+      if (initialData) {
+        await axios.patch(
+          `/api/${params.storeId}/banners/${params.bannerId}`,
+          data
+        );
+      } else {
         await axios.post(`/api/${params.storeId}/banners`, data);
       }
-      await axios.post(`/api/${params.storeId}/banners`, data);
       router.refresh();
       router.push(`/${params.storeId}/banners`);
       toast.success(toastMessage);
     } catch (error) {
-      toast.error("Cek kembalki data yang diinput");
+      toast.error("Cek kembali data yang diinput");
     } finally {
       setLoading(false);
     }
@@ -82,12 +83,13 @@ export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
 
   const onDelete = async () => {
     try {
-      await axios.delete(`/api/stores/${params.storeId}/banners/${params.bannerId}`);
+      setLoading(true);
+      await axios.delete(`/api/${params.storeId}/banners/${params.bannerId}`);
       router.refresh();
       router.push(`/${params.storeId}/banners`);
       toast.success("Banner berhasil dihapus");
     } catch (error) {
-      toast.error("Cek kembali data dan koneksimu");
+      toast.error("Cek kembali data dan koneksi mu");
     } finally {
       setLoading(false);
       setOpen(false);
@@ -127,7 +129,7 @@ export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
               name="label"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Label</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Label Banner"
@@ -139,6 +141,7 @@ export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="imageUrl"
@@ -158,7 +161,7 @@ export const BannersForm: React.FC<BannersFormProps> = ({ initialData }) => {
               )}
             />
           </div>
-          <Button disabled={loading} className="ml-auto" type="submit">
+          <Button disabled={loading} type="submit">
             {action}
           </Button>
         </form>
