@@ -8,6 +8,7 @@ import toast from "react-hot-toast"
 import { useParams, useRouter } from "next/navigation"
 import { useState } from "react"
 import axios from "axios"
+import { AlertModal } from "@/components/modals/alert-modal"
 
 interface CellActionProps {
     data: BannerColumn
@@ -43,6 +44,8 @@ export const CellAction: React.FC<CellActionProps> = ({data}) => {
 
     return (
         <>
+        <AlertModal isOpen={open} onClose={() => setOpen(false)} onConfirm={onDelete} loading={loading}/>
+
         <div className="flex items-center gap-x-2"> 
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -61,7 +64,7 @@ export const CellAction: React.FC<CellActionProps> = ({data}) => {
                     <Edit className="mr-2 h-4 w-4"/>
                     Update
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpen(true)}>
                     <Trash className="mr-2 h-4 w-4"/>
                     Delete
                 </DropdownMenuItem>
