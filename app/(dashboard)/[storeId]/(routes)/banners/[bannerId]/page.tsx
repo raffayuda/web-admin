@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import { BannerForm } from "./components/banners-form";
+import { BannerForm } from "./components/banner-form";
 
 const BannerPage = async ({
     params

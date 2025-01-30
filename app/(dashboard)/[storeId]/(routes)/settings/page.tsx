@@ -5,15 +5,20 @@ import { SettingsForm } from "./components/settings-form";
 
 interface SettingsPageProps {
     params: {
-        storeId: string
+        storeId: string;
     }
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = async ({params}) => {
-    const {userId} = await auth()
-    if(!userId){
-        redirect("/sign-in");
+const SettingsPage: React.FC<SettingsPageProps> = async ({
+    params
+}) => {
+
+    const { userId } = await auth()
+
+    if (!userId) {
+        redirect('/sign-in')
     }
+
     const store = await db.store.findFirst({
         where: {
             id: params.storeId,
@@ -21,14 +26,16 @@ const SettingsPage: React.FC<SettingsPageProps> = async ({params}) => {
         }
     })
 
-    if(!store){
-        redirect("/")
+    if (!store) {
+        redirect('/')
     }
+
     return ( 
         <div className="flex-col">
-           <div className="flex-1 space-y-4 p-8 pt-6">
-            <SettingsForm initialData={store}/>
-           </div>
+            <div className="flex-1 space-y-4 p-8 pt-6">
+                <SettingsForm initialData={store} />
+            </div>
+            
         </div>
      );
 }
