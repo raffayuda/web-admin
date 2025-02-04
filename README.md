@@ -1,3 +1,3 @@
-<a href="web-admin-smoky.vercel.app
-">web-admin-smoky.vercel.app
+<a href="https://web-admin-smoky.vercel.app/
+">https://web-admin-smoky.vercel.app/
 </a>
